@@ -7,7 +7,7 @@ class Layer:
     RELU = 2 
     SOFTMAX = 3
 
-
+ 
     def __init__(self, total_nodes):
         self.total_nodes = total_nodes
         self.weight = None
@@ -21,7 +21,6 @@ class Layer:
     def activate(self, previous_layer_activation):
         # Calculate the linear function of the layer weight and previous layer activation
         # Transpose the result, so that it have the same shape with previous layer activation
-
         self.z = previous_layer_activation @ self.weight.T
 
         # Check activation function type
@@ -29,13 +28,14 @@ class Layer:
             self.activation = (1 / (1 + np.exp(-self.z)))
         
         elif self.activation_type == Layer.TANH:
-            pass
+            self.activation = np.tanh(self.z)
 
         elif self.activation_type == Layer.RELU:
-            pass
+            self.activation = np.where(self.z > 0, self.z, 0)
             
         elif self.activation_type == Layer.SOFTMAX:
-            pass
+            exponent = np.exp(self.z)
+            self.activation = exponent / np.sum(exponent, axis=1)[:, np.newaxis]
         
         # Create a vector of ones
         ones = np.ones((self.activation.shape[0], 1))
@@ -51,12 +51,14 @@ class Layer:
             g = self.activation[:, 1:] * (1 - self.activation[:, 1:])
         
         elif self.activation_type == Layer.TANH:
-            pass
+            g = 1 - (self.activation[:, 1:] * self.activation[:, 1:])
 
         elif self.activation_type == Layer.RELU:
-            pass
+            g = np.where(self.z > 0, self.z, 0)
+            g = np.where(g <= 0, g, 1)
             
         elif self.activation_type == Layer.SOFTMAX:
+            # Should be used for the last layer
             pass
 
         # Calculate the error
@@ -100,6 +102,8 @@ class NeuralNetwork:
 
 
     def train(self, x, y):
+        if self.batch_size <= 0:
+            self.batch_size = len(x)
         for epoch in range(self.total_epochs):
             # initial start batch is 0
             start_batch = 0 
@@ -140,7 +144,7 @@ class NeuralNetwork:
         difference = a + b
 
         total_cost = -np.sum(difference, axis=0) / len(y)
-        return total_cost
+        return np.sum(total_cost)
 
 
     def add_layer(self, total_nodes, activation_type, epsilon=1):
