@@ -10,5 +10,4 @@ A neural network class based on Andrew Ng's lecture.
     - SoftMax Function
   - Use Numpy array to help the calculation.
   - Model learn using Back Propagation algorithm.
-  - Implemented Epoch and Batch SIZe.
-  - 
+  - Implemented Epoch and Batch Size.
